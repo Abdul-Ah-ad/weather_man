@@ -20,6 +20,14 @@ MIN_TEMP = 'min_temp'
 MAX_HUMIDITY = 'max_humidity'
 MIN_HUMIDITY = 'min_humidity'
 
+# Mapping of stats keys to their descriptive names
+STATS_KEYS = {
+    MAX_TEMP: 'max_temp',
+    MIN_TEMP: 'min_temp',
+    MAX_HUMIDITY: 'max_humidity',
+    MIN_HUMIDITY: 'min_humidity'
+}
+
 # Default headers for fallback
 DEFAULT_HEADER = [
     'PKT', 'Max TemperatureC', 'Mean TemperatureC', 'Min TemperatureC',
@@ -42,11 +50,10 @@ def collect_weather_data_files(directory):
 
 def parse_weather_file(filepath):
     """
-    Parses each row of a weather data file and returns a list of valid tuples:
+    Parses each row of a weather data file and yields valid tuples:
     (date, max_temp, min_temp, humidity).
     Skips invalid rows and continues with the next.
     """
-    parsed_data = []
     try:
         with open(filepath, 'r', encoding='utf-8-sig') as file:
             reader = csv.reader(file)
@@ -62,12 +69,11 @@ def parse_weather_file(filepath):
                     max_temp = int(row[MAX_TEMP_INDEX]) if row[MAX_TEMP_INDEX] else None
                     min_temp = int(row[MIN_TEMP_INDEX]) if row[MIN_TEMP_INDEX] else None
                     humidity = int(row[HUMIDITY_INDEX]) if row[HUMIDITY_INDEX] else None
-                    parsed_data.append((date, max_temp, min_temp, humidity))
+                    yield (date, max_temp, min_temp, humidity)#preventing data leakage
                 except (ValueError, IndexError):
                     continue
     except (FileNotFoundError, IOError):
         pass
-    return parsed_data
 
 def generate_annual_stats(files):
     """
