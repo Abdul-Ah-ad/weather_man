@@ -119,7 +119,7 @@ def generate_annual_hottest_days(file_paths):
     return hottest
 
 
-def default_value(yearly_data,stats,limit):
+def default_stats_value(yearly_data,stats,limit):
     if yearly_data[stats]!=limit:
         return yearly_data[stats]
     return '-'
@@ -131,10 +131,10 @@ def print_annual_weather_stats(stats):
     print('--------------------------------------------------------------------')
     for year in sorted(stats.keys()):
         yearly_data = stats[year]
-        max_temp = default_value(yearly_data,MAX_TEMP,float('-inf'))
-        min_temp = default_value(yearly_data,MIN_TEMP,float('inf'))
-        max_humidity = default_value(yearly_data,MAX_HUMIDITY,float('-inf'))
-        min_humidity = default_value(yearly_data,MIN_HUMIDITY,float('inf'))
+        max_temp = default_stats_value(yearly_data,MAX_TEMP,float('-inf'))
+        min_temp = default_stats_value(yearly_data,MIN_TEMP,float('inf'))
+        max_humidity = default_stats_value(yearly_data,MAX_HUMIDITY,float('-inf'))
+        min_humidity = default_stats_value(yearly_data,MIN_HUMIDITY,float('inf'))
         print(f"{year:<10}{max_temp:^14}{min_temp:^14}{max_humidity:^18}{min_humidity:^14}")
 
 
