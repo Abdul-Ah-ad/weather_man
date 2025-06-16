@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 from enum import Enum
 
+
 # Constants for weather data fields
 DATE_FIELD = 'PKT'
 RAW_DATE_FIELD = 'PKST'
@@ -47,6 +48,7 @@ def collect_weather_data_files(directory):
         for filename in os.listdir(directory)
         if filename.endswith('.txt')
     ]
+    
 
 def parse_weather_file(filepath):
     """
@@ -75,7 +77,8 @@ def parse_weather_file(filepath):
     except (FileNotFoundError, IOError):
         pass
 
-def generate_annual_stats(files):
+
+def generate_annual_stats(file_paths):
     """
     Aggregates annual statistics: max/min temperature and humidity.
     Returns a dictionary: {year: {max_temp, min_temp, max_humidity, min_humidity}}
@@ -87,7 +90,7 @@ def generate_annual_stats(files):
         MIN_HUMIDITY: float('inf')
     })
 
-    for file_path in files:
+    for file_path in file_paths:
         for date, max_temp, min_temp, humidity in parse_weather_file(file_path):
             year = date.year
             if max_temp is not None:
@@ -100,12 +103,13 @@ def generate_annual_stats(files):
 
     return stats
 
-def generate_annual_hottest_days(files):
+
+def generate_annual_hottest_days(file_paths):
     """
     Returns a dictionary: {year: {'temp': max_temp, 'date': 'YYYY-MM-DD'}}
     """
     hottest = {}
-    for file_path in files:
+    for file_path in file_paths:
         for date, max_temp, *_ in parse_weather_file(file_path):
             if max_temp is None:
                 continue
@@ -114,17 +118,25 @@ def generate_annual_hottest_days(files):
                 hottest[year] = {'temp': max_temp, 'date': date.strftime('%Y-%m-%d')}
     return hottest
 
+
+def default_value(yearly_data,stats,limit):
+    if yearly_data[stats]!=limit:
+        return yearly_data[stats]
+    return '-'
+
+
 def print_annual_weather_stats(stats):
     """Prints the yearly max/min temperature and humidity statistics."""
     print('Year      Max Temp      Min Temp      Max Humidity      Min Humidity')
     print('--------------------------------------------------------------------')
     for year in sorted(stats.keys()):
         yearly_data = stats[year]
-        max_temp = yearly_data[MAX_TEMP] if yearly_data[MAX_TEMP] != float('-inf') else '-'
-        min_temp = yearly_data[MIN_TEMP] if yearly_data[MIN_TEMP] != float('inf') else '-'
-        max_humidity = yearly_data[MAX_HUMIDITY] if yearly_data[MAX_HUMIDITY] != float('-inf') else '-'
-        min_humidity = yearly_data[MIN_HUMIDITY] if yearly_data[MIN_HUMIDITY] != float('inf') else '-'
+        max_temp = default_value(yearly_data,MAX_TEMP,float('-inf'))
+        min_temp = default_value(yearly_data,MIN_TEMP,float('inf'))
+        max_humidity = default_value(yearly_data,MAX_HUMIDITY,float('-inf'))
+        min_humidity = default_value(yearly_data,MIN_HUMIDITY,float('inf'))
         print(f"{year:<10}{max_temp:^14}{min_temp:^14}{max_humidity:^18}{min_humidity:^14}")
+
 
 def print_annual_hottest_days(hottest_days):
     """Prints the hottest day of each year with temperature and date."""
@@ -133,6 +145,7 @@ def print_annual_hottest_days(hottest_days):
     for year in sorted(hottest_days.keys()):
         date = datetime.strptime(hottest_days[year]['date'], '%Y-%m-%d').strftime('%Y/%m/%d')
         print(f"{year:<10}{date:^15}{hottest_days[year]['temp']:>4}C")
+
 
 def parse_cli_args():
     """Parses and returns command-line arguments."""
@@ -146,6 +159,7 @@ def parse_cli_args():
         help='Path to directory containing weather .txt files'
     )
     return parser.parse_args()
+
 
 def main():
     """Main function to handle report generation based on user input."""
@@ -163,6 +177,7 @@ def main():
     elif args.report_number == ReportType.HOTTEST_DAY.value:
         hottest_days = generate_annual_hottest_days(files)
         print_annual_hottest_days(hottest_days)
+
 
 if __name__ == '__main__':
     main()
